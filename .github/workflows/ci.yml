@@ -1,0 +1,113 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Core Backend (Java 21 / Spring Boot 3)
+  # ---------------------------------------------------------------------------
+  backend-ci:
+    name: Backend Tests & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/core-backend
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Grant execute permission for mvnw
+        run: chmod +x mvnw
+
+      - name: Run Unit & Integration Tests
+        run: ./mvnw clean test -B
+
+  # ---------------------------------------------------------------------------
+  # 2. AI & Route Optimization Engine (Python 3.11 / FastAPI)
+  # ---------------------------------------------------------------------------
+  ai-engine-ci:
+    name: AI Engine Tests & Quality
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/ai-engine
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Test Suite
+        env:
+          PYTHONPATH: .
+        run: python -m unittest discover -s tests
+
+  # ---------------------------------------------------------------------------
+  # 3. Web Client (React 19 / TypeScript / Vite)
+  # ---------------------------------------------------------------------------
+  web-client-ci:
+    name: Web Client Lint & Production Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web-client
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: apps/web-client/package-lock.json
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Run Type Check & Vite Production Build
+        run: npm run build
+
+  # ---------------------------------------------------------------------------
+  # 4. Infrastructure & Container Validation
+  # ---------------------------------------------------------------------------
+  docker-validate:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Configuration
+        run: docker compose -f infrastructure/docker/docker-compose.yml config --quiet

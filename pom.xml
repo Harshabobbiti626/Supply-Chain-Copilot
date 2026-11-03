@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.supplychain.copilot</groupId>
+    <artifactId>supplychain-copilot-root</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>SupplyChain Copilot Enterprise Suite</name>
+    <description>Event-Driven Logistics Disruption and Route Optimization Hub</description>
+
+    <modules>
+        <module>services/core-backend</module>
+    </modules>
+</project>
+

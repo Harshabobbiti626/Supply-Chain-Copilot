@@ -111,3 +111,4 @@ jobs:
 
       - name: Validate Docker Compose Configuration
         run: docker compose -f infrastructure/docker/docker-compose.yml config --quiet
+
